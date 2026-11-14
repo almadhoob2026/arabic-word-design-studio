@@ -1,0 +1,11 @@
+{
+  "path": "examples/output/executive_report.docx",
+  "passed": true,
+  "paragraphs": 50,
+  "rtl_paragraphs": 50,
+  "tables": 3,
+  "body_characters": 1200,
+  "failures": [],
+  "warnings": [],
+  "note": "Structural checks do not establish visual quality. Inspect rendered page PNGs."
+}

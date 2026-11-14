@@ -1,0 +1,41 @@
+{
+  "documents": [
+    {
+      "document": "executive_report",
+      "pages": 2,
+      "text_chars_by_page": [
+        480,
+        901
+      ],
+      "structural_audit": true
+    },
+    {
+      "document": "official_decision",
+      "pages": 1,
+      "text_chars_by_page": [
+        1065
+      ],
+      "structural_audit": true
+    },
+    {
+      "document": "strategic_plan",
+      "pages": 2,
+      "text_chars_by_page": [
+        681,
+        497
+      ],
+      "structural_audit": true
+    },
+    {
+      "document": "impact_report",
+      "pages": 2,
+      "text_chars_by_page": [
+        463,
+        910
+      ],
+      "structural_audit": true
+    }
+  ],
+  "automated_tests": "12 passed",
+  "visual_review": "manual review of rendered page images performed; not machine-certified"
+}

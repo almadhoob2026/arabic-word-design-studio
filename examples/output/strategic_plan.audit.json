@@ -1,0 +1,11 @@
+{
+  "path": "examples/output/strategic_plan.docx",
+  "passed": true,
+  "paragraphs": 51,
+  "rtl_paragraphs": 51,
+  "tables": 2,
+  "body_characters": 1029,
+  "failures": [],
+  "warnings": [],
+  "note": "Structural checks do not establish visual quality. Inspect rendered page PNGs."
+}

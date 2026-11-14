@@ -1,0 +1,11 @@
+{
+  "path": "examples/output/impact_report.docx",
+  "passed": true,
+  "paragraphs": 43,
+  "rtl_paragraphs": 43,
+  "tables": 3,
+  "body_characters": 1188,
+  "failures": [],
+  "warnings": [],
+  "note": "Structural checks do not establish visual quality. Inspect rendered page PNGs."
+}

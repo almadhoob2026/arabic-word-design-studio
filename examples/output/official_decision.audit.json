@@ -1,0 +1,11 @@
+{
+  "path": "examples/output/official_decision.docx",
+  "passed": true,
+  "paragraphs": 16,
+  "rtl_paragraphs": 16,
+  "tables": 0,
+  "body_characters": 982,
+  "failures": [],
+  "warnings": [],
+  "note": "Structural checks do not establish visual quality. Inspect rendered page PNGs."
+}
