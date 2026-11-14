@@ -12,10 +12,11 @@ from docx.enum.section import WD_ORIENT
 from docx.shared import Cm, Pt, RGBColor
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from .design import PRESETS, get_preset
+from .design import PRESETS, get_preset, LAYOUT
 from .rtl import (
     rtl_paragraph, rtl_run, rtl_style, rtl_table, cell_fill, set_cell_border,
     repeat_header, cannot_split, field, paragraph_rule, set_cell_margin, complex_font_size,
+    reset_cell_paragraph, complex_bold,
 )
 
 
@@ -29,7 +30,7 @@ def _p(container, text='', style=None, font=None, bold=False, color=None, align=
     if text:
         r = rtl_run(p.add_run(str(text)), font)
         if color: r.font.color.rgb = rgb(color)
-        if bold: r.bold = True
+        if bold: complex_bold(r)
     return p
 
 
@@ -44,10 +45,18 @@ def _style(doc, name, preset, size, color, bold=False, space_before=0, space_aft
     szcs.set(qn("w:val"), str(round(size*2)))
     st.font.color.rgb = rgb(color)
     st.font.bold = bold
+    bc=st._element.rPr.find(qn("w:bCs"))
+    if bc is None:
+        bc=OxmlElement("w:bCs"); st._element.rPr.append(bc)
+    bc.set(qn("w:val"), "1" if bold else "0")
     pf = st.paragraph_format
     if name == "Heading 1": space_before = 12
     if name == "Studio Body": space_after = 4
     pf.space_before, pf.space_after = Pt(space_before), Pt(space_after)
+    # Word defaults and imported Normal styles can carry hidden indents.
+    pf.left_indent = Pt(0)
+    pf.right_indent = Pt(0)
+    pf.first_line_indent = Pt(0)
     pf.line_spacing = 1.23 if name in ("Normal", "Studio Body") else 1.13
     if keep: pf.keep_with_next = True
     # Existing default Word styles retain OOXML style inheritance and remain editable.
@@ -73,6 +82,12 @@ def _configure(doc, preset):
     _style(doc,"Studio Small",preset,8,preset.muted,space_after=4)
     _style(doc,"Studio Table",preset,9,preset.primary,space_after=0)
     _style(doc,"Studio Table Header",preset,9,preset.primary,bold=True,space_after=0)
+    _style(doc,"Studio Bullet",preset,preset.body_size,preset.primary,space_after=6)
+    bullet = doc.styles["Studio Bullet"].paragraph_format
+    bullet.right_indent = Cm(LAYOUT.bullet_right_indent_cm)
+    bullet.left_indent = Pt(0)
+    bullet.first_line_indent = Cm(-LAYOUT.bullet_hanging_cm)
+    _style(doc,"Studio Spacer",preset,2,preset.primary,space_after=0)
     _style(doc,"Studio Metric Number",preset,30,preset.accent,bold=True,space_after=0)
     return sec
 
@@ -83,6 +98,8 @@ def _header_footer(doc,preset,brief):
     h.is_linked_to_previous=False
     p=h.paragraphs[0]
     rtl_paragraph(p)
+    p.paragraph_format.space_before=Pt(0)
+    p.paragraph_format.space_after=Pt(0)
     r=rtl_run(p.add_run(brief.get("organization", "")),preset.body_font)
     r.bold=True
     r.font.size=Pt(8.5)
@@ -91,6 +108,8 @@ def _header_footer(doc,preset,brief):
     f=sec.footer
     p=f.paragraphs[0]
     rtl_paragraph(p)
+    p.paragraph_format.space_before=Pt(0)
+    p.paragraph_format.space_after=Pt(0)
     r=rtl_run(p.add_run(brief.get("footer_note", "نموذج توضيحي") + "   •   "),preset.body_font)
     r.font.size=Pt(8)
     r.font.color.rgb=rgb(preset.muted)
@@ -137,10 +156,20 @@ def _cell_text(cell,value,preset,header=False):
     cell.text=''
     p=cell.paragraphs[0]
     p.style='Studio Table Header' if header else 'Studio Table'
-    rtl_paragraph(p)
-    rtl_run(p.add_run(str(value)),preset.body_font)
+    reset_cell_paragraph(p)
+    r=rtl_run(p.add_run(str(value)),preset.body_font)
+    if header: complex_bold(r)
     set_cell_margin(cell)
     cell.vertical_alignment=WD_CELL_VERTICAL_ALIGNMENT.CENTER
+
+
+def _spacer(doc, height=LAYOUT.table_spacer_pt):
+    """A controlled spacer, not an inherited full-height blank Normal line."""
+    p=doc.add_paragraph(style="Studio Spacer")
+    p.paragraph_format.line_spacing=Pt(height)
+    p.paragraph_format.space_before=Pt(0)
+    p.paragraph_format.space_after=Pt(0)
+    return p
 
 
 def _table(doc,preset,data):
@@ -160,7 +189,7 @@ def _table(doc,preset,data):
         cell_fill(c,preset.primary)
         for run in c.paragraphs[0].runs:
             run.font.color.rgb=RGBColor(255,255,255)
-            run.bold=True
+            complex_bold(run)
     repeat_header(t.rows[0])
     for i,row in enumerate(rows):
         cells=t.add_row().cells
@@ -169,7 +198,7 @@ def _table(doc,preset,data):
             if i % 2 == 0: cell_fill(cells[j],preset.pale)
             set_cell_border(cells[j],"bottom",color="E2E6E9",size=5)
         cannot_split(t.rows[i+1])
-    doc.add_paragraph('').paragraph_format.space_after=Pt(1)
+    _spacer(doc)
 
 
 def _impact_snapshot(doc,preset,items):
@@ -185,13 +214,13 @@ def _impact_snapshot(doc,preset,items):
         c.text=''
         set_cell_margin(c,220,200,180,200)
         p=c.paragraphs[0]
-        rtl_paragraph(p)
+        reset_cell_paragraph(p)
         r=rtl_run(p.add_run(it['label']),preset.body_font)
-        r.bold=True
+        complex_bold(r)
         complex_font_size(r,10)
         r.font.color.rgb=rgb(preset.primary if idx==0 else 'FFFFFF')
         p2=_p(c,str(it['value']),"Studio Metric Number",preset.heading_font)
-        p2.paragraph_format.space_after=Pt(1)
+        reset_cell_paragraph(p2)
         for r in p2.runs:
             complex_font_size(r,30)
             r.font.color.rgb=rgb(preset.accent if idx==0 else 'FFFFFF')
@@ -214,14 +243,17 @@ def _metrics(doc,preset,items):
             c.text=''
             set_cell_margin(c,160,160,160,160)
             p=c.paragraphs[0]
-            rtl_paragraph(p)
+            reset_cell_paragraph(p)
             r=rtl_run(p.add_run(str(it['value'])),preset.heading_font)
             complex_font_size(r,23)
-            r.bold=True
+            complex_bold(r)
             r.font.color.rgb=rgb(preset.accent)
             p2=_p(c,it['label'],"Studio Table",preset.body_font)
-            if it.get('note'): _p(c,it['note'],"Studio Small",preset.body_font)
-        doc.add_paragraph('')
+            reset_cell_paragraph(p2)
+            if it.get('note'):
+                note=_p(c,it['note'],"Studio Small",preset.body_font)
+                reset_cell_paragraph(note)
+        _spacer(doc)
 
 
 def _section(doc,preset,item):
@@ -232,8 +264,10 @@ def _section(doc,preset,item):
     for line in item.get('paragraphs',[]):
         _p(doc,line,"Studio Body",preset.body_font)
     for bullet in item.get('bullets',[]):
-        p=_p(doc,f"•  {bullet}","Studio Body",preset.body_font)
-        p.paragraph_format.left_indent=Cm(.3)
+        p=_p(doc,f"•  {bullet}","Studio Bullet",preset.body_font)
+        p.paragraph_format.left_indent=Pt(0)
+        p.paragraph_format.right_indent=Cm(LAYOUT.bullet_right_indent_cm)
+        p.paragraph_format.first_line_indent=Cm(-LAYOUT.bullet_hanging_cm)
     if item.get('metrics'):_metrics(doc,preset,item['metrics'])
     if item.get('table'):_table(doc,preset,item['table'])
     if item.get('steps'):

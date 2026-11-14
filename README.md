@@ -88,3 +88,10 @@ The implementation is independently authored and was informed by public document
 ## Roadmap
 
 Next priorities are content-preserving restyling of user-provided DOCX, refined template packs, chart objects, Arabic TOC and footnotes, Word-vs-LibreOffice rendering comparisons and in-editor design customization.
+
+
+## Layout corrections in v1.1
+
+This release addresses RTL list indentation, unintended inherited paragraph indents in table cells, inconsistent cell padding/paragraph spacing, Word complex-script header bold, compound numeric ranges rendered backwards in Arabic (e.g. `2026–2027`), and oversized blank paragraphs following tables.
+
+The shared `LAYOUT` tokens live in `arabic_word_studio/design.py`. `scripts/audit_docx.py` now checks table-cell margins, paragraph indents and spacing, RTL hanging bullets, and warns about potentially reversed compound numbers. The new `tests/test_layout_regression.py` provides repeatable regression checks. See [layout and spacing contract](references/layout-spacing-rules.md). Run the structural tests **and** inspect every rendered page; automated inspection is not a substitute for visual QA.

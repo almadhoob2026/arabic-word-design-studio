@@ -1,41 +1,42 @@
 {
-  "documents": [
-    {
-      "document": "executive_report",
+  "version": "1.1.0",
+  "audit_date": "2026-11-14",
+  "tested_types": {
+    "executive_report": {
       "pages": 2,
-      "text_chars_by_page": [
-        480,
-        901
-      ],
-      "structural_audit": true
+      "tables": 3,
+      "table_cells_checked": 28,
+      "rtl_bullets_checked": 3,
+      "structural_passed": true,
+      "warnings": []
     },
-    {
-      "document": "official_decision",
+    "official_decision": {
       "pages": 1,
-      "text_chars_by_page": [
-        1065
-      ],
-      "structural_audit": true
+      "tables": 0,
+      "table_cells_checked": 0,
+      "rtl_bullets_checked": 0,
+      "structural_passed": true,
+      "warnings": []
     },
-    {
-      "document": "strategic_plan",
+    "strategic_plan": {
       "pages": 2,
-      "text_chars_by_page": [
-        681,
-        497
-      ],
-      "structural_audit": true
+      "tables": 2,
+      "table_cells_checked": 40,
+      "rtl_bullets_checked": 3,
+      "structural_passed": true,
+      "warnings": []
     },
-    {
-      "document": "impact_report",
+    "impact_report": {
       "pages": 2,
-      "text_chars_by_page": [
-        463,
-        910
-      ],
-      "structural_audit": true
+      "tables": 3,
+      "table_cells_checked": 24,
+      "rtl_bullets_checked": 3,
+      "structural_passed": true,
+      "warnings": []
     }
-  ],
-  "automated_tests": "12 passed",
-  "visual_review": "manual review of rendered page images performed; not machine-certified"
+  },
+  "structural_tests": "23 passed",
+  "page_count_total": 7,
+  "visual_review": "All 7 page PNGs generated and individually reviewed at current renderer settings. Other Word installations may paginate differently.",
+  "content_integrity": "Paragraph and table contents matched previous sample generation after stripping invisible LRM markers."
 }

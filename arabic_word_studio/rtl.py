@@ -1,7 +1,23 @@
 """Document-native OOXML helpers for Arabic right-to-left Word content."""
 from docx.enum.text import WD_ALIGN_PARAGRAPH
+import re
+
+# Word/LibreOffice may visually reverse numeric ranges inside RTL text unless
+# each LTR segment is isolated. Keep native w:bidi / w:rtl alongside LRM.
+_LTR_RANGE = re.compile(r"(?<![A-Za-z0-9])(?:[0-9]{1,4}(?:[./–—\-][0-9]{1,4})+)(?![A-Za-z0-9])")
+
+def isolate_numeric_ranges(value: str) -> str:
+    """Preserve reading order for dates/ranges such as 2026–2027 in Arabic runs."""
+    def wrap(match):
+        if (match.start() > 0 and match.end() < len(match.string)
+                and match.string[match.start()-1] == "\u200e"
+                and match.string[match.end()] == "\u200e"):
+            return match.group()
+        return "\u200e" + match.group() + "\u200e"
+    return _LTR_RANGE.sub(wrap, value)
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from .design import LAYOUT
 
 
 def _child(parent, name):
@@ -20,6 +36,8 @@ def rtl_paragraph(paragraph, alignment=WD_ALIGN_PARAGRAPH.RIGHT):
 
 
 def rtl_run(run, font_name=None):
+    if run.text:
+        run.text = isolate_numeric_ranges(run.text)
     rpr = run._r.get_or_add_rPr()
     _child(rpr, "w:rtl").set(qn("w:val"), "1")
     _child(rpr, "w:cs").set(qn("w:val"), "1")
@@ -41,6 +59,8 @@ def rtl_style(style, font_name):
     _child(rpr, "w:rtl").set(qn("w:val"), "1")
     _child(rpr, "w:cs").set(qn("w:val"), "1")
     _child(rpr, "w:lang").set(qn("w:bidi"), "ar-BH")
+    ppr = style._element.get_or_add_pPr()
+    _child(ppr, "w:bidi").set(qn("w:val"), "1")
 
 
 def rtl_table(table):
@@ -108,13 +128,50 @@ def keep_with_next(paragraph):
     paragraph.paragraph_format.keep_with_next = True
 
 
-def set_cell_margin(cell, top=90, start=110, bottom=90, end=110):
+def set_cell_margin(cell, top=LAYOUT.table_padding_vertical_twips,
+                    start=LAYOUT.table_padding_horizontal_twips,
+                    bottom=LAYOUT.table_padding_vertical_twips,
+                    end=LAYOUT.table_padding_horizontal_twips):
+    """Set logical RTL and physical left/right margins for Word/LO compatibility.
+
+    Values are twips (1/20 pt). Equal start/end avoids asymmetric padding
+    when an editor ignores bidi-aware logical margins.
+    """
+    if any(v < 0 for v in (top, start, bottom, end)):
+        raise ValueError("Cell margins cannot be negative")
     tcpr = cell._tc.get_or_add_tcPr()
     mar = _child(tcpr, "w:tcMar")
-    for side, val in [("top", top), ("start", start), ("bottom", bottom), ("end", end)]:
+    for side, val in [("top", top), ("start", start), ("bottom", bottom),
+                      ("left", end), ("right", start)]:
         x = _child(mar, f"w:{side}")
         x.set(qn("w:w"), str(val))
         x.set(qn("w:type"), "dxa")
+    # A large share of viewers still honor only the older physical sides.
+    for side, val in (("start", start), ("end", end)):
+        x = _child(mar, f"w:{side}")
+        x.set(qn("w:w"), str(val))
+        x.set(qn("w:type"), "dxa")
+
+
+def reset_cell_paragraph(paragraph):
+    """Override inherited indentation and spacing within every table cell."""
+    from docx.shared import Pt
+    rtl_paragraph(paragraph)
+    pf = paragraph.paragraph_format
+    pf.left_indent = Pt(0)
+    pf.right_indent = Pt(0)
+    pf.first_line_indent = Pt(0)
+    pf.space_before = Pt(0)
+    pf.space_after = Pt(0)
+    pf.line_spacing = LAYOUT.table_line_spacing
+    return paragraph
+
+
+def complex_bold(run, enabled=True):
+    """Set Arabic complex-script bold alongside the ordinary run bold flag."""
+    run.bold = enabled
+    _child(run._r.get_or_add_rPr(), "w:bCs").set(qn("w:val"), "1" if enabled else "0")
+    return run
 
 
 def complex_font_size(run, point_size):

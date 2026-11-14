@@ -4,7 +4,9 @@
   "paragraphs": 51,
   "rtl_paragraphs": 51,
   "tables": 2,
-  "body_characters": 1029,
+  "table_cells_checked": 40,
+  "rtl_bullets_checked": 3,
+  "body_characters": 1033,
   "failures": [],
   "warnings": [],
   "note": "Structural checks do not establish visual quality. Inspect rendered page PNGs."

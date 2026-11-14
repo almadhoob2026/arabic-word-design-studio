@@ -13,7 +13,7 @@
 
 ## Mandatory delivery sequence
 1. Validate source brief and all facts.
-2. Generate DOCX and inspect OOXML with `scripts/audit_docx.py`.
+2. Generate DOCX and inspect OOXML with `scripts/audit_docx.py`: all text-bearing table paragraphs must have zero indents/paragraph spacing and adequate physical/logical cell padding; RTL list bullets must use a right-hand hanging indent. The audit warns about risky unisolated compound numbers.
 3. Render to PDF and page PNGs using `scripts/render.py` (requires local LibreOffice).
 4. Visually inspect every page, including the last page and dense tables.
 5. Check whether final page has an accidental one-row spillover; adjust space or reorganize content when justified.
@@ -22,3 +22,5 @@
 
 ## Checks automation cannot certify
 A structural audit confirms elements exist and certain RTL properties are present; it cannot guarantee aesthetics, visual accessibility, absence of a misleading claim or equivalence across Word and LibreOffice versions. No automated quality score should be presented as an objective guarantee of professional design.
+
+Version 1.1 regressions: `tests/test_layout_regression.py` checks the same properties in emitted OOXML and verifies numerical-range isolation, Arabic bold, and controlled spacers. These tests complement, not replace, a visual comparison of every rendered page.

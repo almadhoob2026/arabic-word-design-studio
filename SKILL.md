@@ -8,7 +8,7 @@ description: >-
   and DOCX production requiring page-by-page visual checks.
 ---
 
-# Arabic Word Design Studio — Skill v1.0
+# Arabic Word Design Studio — Skill v1.1
 
 ## Purpose
 You are a **document art director, Arabic editor, Word production specialist and QA reviewer**. Create Arabic DOCX files whose visual identity reflects *document purpose*. Avoid the common pattern where every report, decision, plan and form shares the same generic cover, blue headings and card-table styling. Preserve substance while improving hierarchy, spacing, readability, RTL integrity, and real Word editability.
@@ -54,11 +54,19 @@ python scripts/render.py output/report.docx --out-dir output/rendered
 
 For custom content, edit the JSON brief; see `references/brief-schema.md`. Optional `brand` values may override `primary`, `accent`, `muted`, `pale`, `heading_font`, `body_font`. Use fonts already available on the user's machine; fonts are NOT embedded or distributed by this project.
 
+**Layout contract (mandatory for new docs):**
+- Table paragraphs have **zero first-line, right and left indents**, zero before/after spacing and 1.14 line spacing. White space inside cells comes from `w:tcMar`, not paragraph indents.
+- Table cell margins use logical `start/end` **and** physical `left/right` for robust Word/LibreOffice rendering. Base horizontal padding is 155 twips (≈2.7 mm), vertical padding 85 twips; use a consistent layout token rather than inconsistent manual values.
+- Arabic bullets use **right-side 0.55 cm indentation** with a 0.38 cm hanging offset, never an inherited left-side indent. Do not use a full-height blank `Normal` paragraph after tables; insert a small explicit spacer.
+- Mixed LTR date/range strings (such as `2026–2027` and `2026/11/14`) must preserve reading order. Use the included selective numeric isolation helper, alongside native Word RTL properties. Do not blanket-rewrite arbitrary imported content.
+- Verify Arabic **complex-script bold** (`w:bCs`) as well as regular bold for table headers and labels.
+- Shared defaults are versioned in `arabic_word_studio/design.py` as `LAYOUT`; consult `references/layout-spacing-rules.md` before overriding them.
+
 **RTL on the OOXML level:** set `w:bidi` on Arabic paragraphs, `w:rtl` / `w:cs` on Arabic runs, `w:rFonts` with a `w:cs` face, `w:lang` for bidi runs, and `w:bidiVisual` for RTL tables. Use true Heading styles, repeating header rows and safe table cells. Consult `references/rtl-typography.md`.
 
 ### 5. Perform multi-stage QA — never skip
 1. **Editorial**: right document genre, no placeholders leaking into a final institutional file, accurate dates and names, nothing fabricated.
-2. **Document structure**: native Word text and tables, heading hierarchy, page orientation, RTL paragraphs/tables and style consistency. Run `scripts/audit_docx.py`.
+2. **Document structure**: native Word text and tables, heading hierarchy, page orientation, RTL paragraphs/tables, zero table-cell text indents, explicit cell margins, correct RTL hanging bullets, numeric-range order, and style consistency. Run `scripts/audit_docx.py`.
 3. **Visual**: render DOCX to PDF and PNG; inspect *every page*, not just the first. Check joining, clipped text, table headers, breaking rows, footer space, lonely trailing pages, print margins, header/footer collisions and overall white-space balance.
 4. **Content integrity**: confirm original facts, numbers and all paragraphs are still present; verify no accidental omissions during redraft.
 5. **Revision loop**: state each defect, the adjustment, re-render and re-inspect. Do not claim automatic tests certify visual quality.
@@ -80,10 +88,11 @@ A document **fails** regardless of numeric score if it contains omitted critical
 - `references/brief-schema.md`: structure for input JSON briefs and brand tokens
 - `references/quality-gates.md`: QA and 100-point assessment
 - `references/architecture.md`: dependencies, limitations, runtime and licensing
+- `references/layout-spacing-rules.md`: mandatory layout/indent/padding matrix and detected regressions
 - `arabic_word_studio/`: reusable implementation of four presets
 - `examples/briefs/`: four labelled demonstration briefs
 - `examples/output/`: generated editable DOCX test examples
 - `scripts/`: DOCX build, structural inspect, PDF/PNG render
 
-## Scope of v1
+## Scope of v1.1
 The built-in generator supports **new documents** from JSON. It does not claim general-purpose faithful restyling of arbitrary imported DOCX documents, editable Word chart objects, tracked changes, or automatic footnote/TOC construction. These are future extensions and must not be falsely advertised as finished.

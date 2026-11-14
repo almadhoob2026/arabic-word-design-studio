@@ -18,6 +18,19 @@ class Preset:
     orientation: str = "portrait"
     cover: bool = False
 
+@dataclass(frozen=True)
+class LayoutRules:
+    """Shared physical-layout defaults for all four genres (v1.1)."""
+    table_padding_horizontal_twips: int = 155
+    table_padding_vertical_twips: int = 85
+    table_line_spacing: float = 1.14
+    bullet_right_indent_cm: float = 0.55
+    bullet_hanging_cm: float = 0.38
+    table_spacer_pt: float = 5
+
+LAYOUT = LayoutRules()
+
+
 PRESETS = {
     "executive_report": Preset("executive_report", "Executive Report", "Noto Kufi Arabic", "Noto Sans Arabic", "172A40", "087E80", "5F7182", "E8F3F1", 10.5, 15, 27, 2.2, cover=True),
     "official_decision": Preset("official_decision", "Official Decision", "Amiri", "Amiri", "252932", "967A53", "656768", "F3F0EA", 12.5, 17, 24, 2.5),

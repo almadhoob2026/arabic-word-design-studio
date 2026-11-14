@@ -4,6 +4,8 @@
   "paragraphs": 43,
   "rtl_paragraphs": 43,
   "tables": 3,
+  "table_cells_checked": 24,
+  "rtl_bullets_checked": 3,
   "body_characters": 1188,
   "failures": [],
   "warnings": [],
