@@ -32,7 +32,7 @@
 ```bash
 python -m pip install -r requirements.txt
 python scripts/build.py examples/briefs/executive_report.json --out output/my-report.docx
-python scripts/inspect.py output/my-report.docx --type executive_report
+python scripts/audit_docx.py output/my-report.docx --type executive_report
 python scripts/render.py output/my-report.docx --out-dir output/preview
 ```
 

@@ -48,7 +48,7 @@ The included Python implementation handles four first-release JSON briefs. It wr
 ```bash
 python -m pip install -r requirements.txt
 python scripts/build.py examples/briefs/executive_report.json --out output/report.docx
-python scripts/inspect.py output/report.docx --type executive_report
+python scripts/audit_docx.py output/report.docx --type executive_report
 python scripts/render.py output/report.docx --out-dir output/rendered
 ```
 
@@ -58,7 +58,7 @@ For custom content, edit the JSON brief; see `references/brief-schema.md`. Optio
 
 ### 5. Perform multi-stage QA — never skip
 1. **Editorial**: right document genre, no placeholders leaking into a final institutional file, accurate dates and names, nothing fabricated.
-2. **Document structure**: native Word text and tables, heading hierarchy, page orientation, RTL paragraphs/tables and style consistency. Run `scripts/inspect.py`.
+2. **Document structure**: native Word text and tables, heading hierarchy, page orientation, RTL paragraphs/tables and style consistency. Run `scripts/audit_docx.py`.
 3. **Visual**: render DOCX to PDF and PNG; inspect *every page*, not just the first. Check joining, clipped text, table headers, breaking rows, footer space, lonely trailing pages, print margins, header/footer collisions and overall white-space balance.
 4. **Content integrity**: confirm original facts, numbers and all paragraphs are still present; verify no accidental omissions during redraft.
 5. **Revision loop**: state each defect, the adjustment, re-render and re-inspect. Do not claim automatic tests certify visual quality.

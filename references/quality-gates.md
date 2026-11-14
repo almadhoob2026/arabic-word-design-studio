@@ -13,7 +13,7 @@
 
 ## Mandatory delivery sequence
 1. Validate source brief and all facts.
-2. Generate DOCX and inspect OOXML with `scripts/inspect.py`.
+2. Generate DOCX and inspect OOXML with `scripts/audit_docx.py`.
 3. Render to PDF and page PNGs using `scripts/render.py` (requires local LibreOffice).
 4. Visually inspect every page, including the last page and dense tables.
 5. Check whether final page has an accidental one-row spillover; adjust space or reorganize content when justified.

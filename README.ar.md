@@ -24,7 +24,7 @@
 ```bash
 pip install -r requirements.txt
 python scripts/build.py examples/briefs/strategic_plan.json --out output/plan.docx
-python scripts/inspect.py output/plan.docx --type strategic_plan
+python scripts/audit_docx.py output/plan.docx --type strategic_plan
 python scripts/render.py output/plan.docx --out-dir output/plan-preview
 pytest -q
 ```

@@ -17,6 +17,6 @@ jobs:
           mkdir -p output
           for type in executive_report official_decision strategic_plan impact_report; do
             python scripts/build.py "examples/briefs/$type.json" --out "output/$type.docx"
-            python scripts/inspect.py "output/$type.docx" --type "$type"
+            python scripts/audit_docx.py "output/$type.docx" --type "$type"
           done
       # Visual verification requires a separate reviewer and a compatible renderer.
